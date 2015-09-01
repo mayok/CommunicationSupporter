@@ -1,4 +1,6 @@
 <?php
+include dirname(__FILE__).'/config.php';
+
 if( isset($_POST["id"])     && 
     isset($_POST["name"])   && 
     isset($_POST["data"])   && 
