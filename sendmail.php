@@ -1,11 +1,4 @@
 <?php
-$address = array('shimamura' => "YOUR_EMAIL_ADDRESS",
-                 'shibuya'   => null,
-                 'honda'     => null,
-                 'akagi'     => null,
-                 'kanzaki'   => null,
-                 'jougasaki' => null);
-
 if( isset($_POST["id"])     && 
     isset($_POST["name"])   && 
     isset($_POST["data"])   && 
