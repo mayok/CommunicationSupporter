@@ -1,6 +1,50 @@
 var flag = 0;
+var obj = {};
+function storeobj(id, email) {
+  obj[id] = email;
+  console.log(obj);
+}
+function getobj(id) {
+  return obj[id];
+}
 
-function sendmail(id, name, data) {
+function cElement(target_id, c, d, name, type) {
+  var input = document.createElement("input");
+  input.name  = name;
+  input.type  = type;
+  input.id    = c;
+  input.value = d;
+
+  var label = document.createElement("label");
+  label.className = type;
+  label.setAttribute("for", c);
+  label.innerHTML = d;
+
+  var target = document.getElementById(target_id);
+  target.appendChild(input);
+  target.appendChild(label);
+}
+
+function displayUser(json) {
+  var target = Object.keys(json);
+  for (var i=1; i <= target.length; ++i) {
+    if(json[i]["e"] != "null" ) cElement("human", json[i]["c"], json[i]["d"], "user", "radio");
+    storeobj(json[i]["c"], json[i]["e"]);
+  }
+}
+function getUserList() {
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.onreadystatechange=function() {
+    if(xmlhttp.readyState==4 && xmlhttp.status==200){
+      var json = JSON.parse(xmlhttp.responseText);
+      displayUser(json);
+    }
+  }
+  xmlhttp.open("GET", "getUserList.php", true);
+  xmlhttp.send(null);
+}
+
+function sendmail(id, name, data, email) {
   var xmlhttp = new XMLHttpRequest();
 
   xmlhttp.onreadystatechange=function() {
@@ -11,82 +55,17 @@ function sendmail(id, name, data) {
   }
   xmlhttp.open("POST", "sendmail.php", true);
   xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  xmlhttp.send("id="+id+"&name="+name+"&data="+data);
+  xmlhttp.send("id="+id+"&name="+name+"&data="+data+"&email="+email);
 
   return;
 }
 function clickHandle() {
   if(flag) return;
-  // create input elements
-  var input1 = document.createElement("input"),
-      input2 = document.createElement("input"),
-      input3 = document.createElement("input"),
-      input4 = document.createElement("input"),
-      input5 = document.createElement("input");
-
-  input1.type = "radio";
-  input2.type = "radio";
-  input3.type = "radio";
-  input4.type = "radio";
-  input5.type = "radio";
-
-  input1.name = "status";
-  input2.name = "status";
-  input3.name = "status";
-  input4.name = "status";
-  input5.name = "status";
-
-  input1.value = "キュート";
-  input2.value = "クール";
-  input3.value = "パッション";
-  input4.value = "レッスン";
-  input5.value = "特訓";
-
-  input1.setAttribute("id", "radio01");
-  input2.setAttribute("id", "radio02");
-  input3.setAttribute("id", "radio03");
-  input4.setAttribute("id", "radio04");
-  input5.setAttribute("id", "radio05");
-
-  // create label elements
-  var label1 = document.createElement("label"),
-      label2 = document.createElement("label"),
-      label3 = document.createElement("label"),
-      label4 = document.createElement("label"),
-      label5 = document.createElement("label");
-
-  label1.innerHTML = "キュート";
-  label2.innerHTML = "クール";
-  label3.innerHTML = "パッション";
-  label4.innerHTML = "レッスン";
-  label5.innerHTML = "特訓";
-
-  label1.className = "radio";
-  label2.className = "radio";
-  label3.className = "radio";
-  label4.className = "radio";
-  label5.className = "radio";
-
-  label1.setAttribute("for", "radio01");
-  label2.setAttribute("for", "radio02");
-  label3.setAttribute("for", "radio03");
-  label4.setAttribute("for", "radio04");
-  label5.setAttribute("for", "radio05");
-
-  document.getElementById("sign").appendChild(input1);
-  document.getElementById("sign").appendChild(label1);
-
-  document.getElementById("sign").appendChild(input2);
-  document.getElementById("sign").appendChild(label2);
-
-  document.getElementById("sign").appendChild(input3);
-  document.getElementById("sign").appendChild(label3);
-
-  document.getElementById("sign").appendChild(input4);
-  document.getElementById("sign").appendChild(label4);
-
-  document.getElementById("sign").appendChild(input5);
-  document.getElementById("sign").appendChild(label5);
+  cElement("sign", "radio01", "キュート",   "status", "radio");
+  cElement("sign", "radio02", "クール",     "status", "radio");
+  cElement("sign", "radio03", "パッション", "status", "radio");
+  cElement("sign", "radio04", "レッスン",   "status", "radio");
+  cElement("sign", "radio05", "特訓",       "status", "radio");
 
   flag=1;
 }
@@ -128,8 +107,9 @@ function btnHandler(evt) {
       var data = ci[i].value;
   }
 
-  sendmail(id, name, data);
+  sendmail(id, name, data, getobj(id));
 }
 
+window.onload=getUserList();
 document.getElementById("human").addEventListener("click", clickHandle, false);
 document.getElementById("sign").addEventListener("change", changeHandle, false);
