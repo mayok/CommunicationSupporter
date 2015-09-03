@@ -14,6 +14,6 @@ if( isset($_POST["id"])     &&
     $headers = 'From: callsign@example.com' . "\r\n" . 'X-Mailer: PHP/' . phpversion();
 
     if(!($to == ""))
-      //mail($to, $subject, $data, $headers);
-      file_put_contents(dirname(__FILE__).'/success.txt',$to.$subject.$data);
+      mail($to, $subject, $data, $headers);
+      //file_put_contents(dirname(__FILE__).'/success.txt',$to.$subject.$data);
 }
