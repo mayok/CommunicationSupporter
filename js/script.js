@@ -1,11 +1,19 @@
 var flag = 0;
-var obj = {};
-function storeobj(id, email) {
-  obj[id] = email;
-  console.log(obj);
+var oEmail = {};
+var oMsg = {};
+function storeobj(object, key, value) {
+  object[key] = value;
 }
-function getobj(id) {
-  return obj[id];
+function getobj(object, key) {
+  return object[key];
+}
+function store(json) {
+  for(var i=0; i<Object.keys(json[0]).length; ++i) {
+    storeobj(oEmail, json[0][i]["c"], json[0][i]["e"]);
+  }
+  for(var i=0; i<Object.keys(json[1]).length; ++i) {
+    storeobj(oMsg, i, json[1][i]);
+  }
 }
 
 function cElement(target_id, c, d, name, type) {
@@ -24,26 +32,18 @@ function cElement(target_id, c, d, name, type) {
   target.appendChild(input);
   target.appendChild(label);
 }
-
-function displayUser(json) {
-  var target = Object.keys(json);
-  for (var i=1; i <= target.length; ++i) {
-    if(json[i]["e"] != "null" ) cElement("human", json[i]["c"], json[i]["d"], "user", "radio");
-    storeobj(json[i]["c"], json[i]["e"]);
-  }
-}
-function getUserList() {
+function getConfiguration() {
   var xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange=function() {
-    if(xmlhttp.readyState==4 && xmlhttp.status==200){
+    if(xmlhttp.readyState==4 && xmlhttp.status==200) {
       var json = JSON.parse(xmlhttp.responseText);
-      displayUser(json);
+      store(json);
+      loadHandle(json[0]);
     }
   }
   xmlhttp.open("GET", "getUserList.php", true);
   xmlhttp.send(null);
 }
-
 function sendmail(id, name, data, email) {
   var xmlhttp = new XMLHttpRequest();
 
@@ -59,20 +59,37 @@ function sendmail(id, name, data, email) {
 
   return;
 }
+
+function loadHandle(json) {
+  for(var i=0; i<Object.keys(json).length; ++i) {
+    if(json[i]["e"] != "null" ) {
+      cElement("human", json[i]["c"], json[i]["d"], "user", "radio");
+    }
+  }
+}
 function clickHandle() {
   if(flag) return;
-  cElement("sign", "radio01", "キュート",   "status", "radio");
-  cElement("sign", "radio02", "クール",     "status", "radio");
-  cElement("sign", "radio03", "パッション", "status", "radio");
-  cElement("sign", "radio04", "レッスン",   "status", "radio");
-  cElement("sign", "radio05", "特訓",       "status", "radio");
+  for (var i=0; i < Object.keys(oMsg).length; ++i) {
+    cElement("sign", "radio0"+i, oMsg[i], "status", "radio");
+  }
 
   flag=1;
 }
 function changeHandle(evt) {
+  var sign = document.getElementById("sign");
   var submit = document.getElementById("submit");
+  var check;
 
-  if(!radio01.checked && !radio02.checked && !radio03.checked && !radio04.checked && !radio05.checked ) {
+  for(var i=0;i<sign.elements.length;i++) {
+    if(!sign.elements[i].checked) {
+      check = true;
+    }
+    else {
+      check = false
+    }
+  }
+
+  if(!check) {
     if(submit.hasChildNodes()){
       document.getElementById("btn").removeEventListener("click", btnHandler, false);
       while (submit.firstChild) {
@@ -107,9 +124,9 @@ function btnHandler(evt) {
       var data = ci[i].value;
   }
 
-  sendmail(id, name, data, getobj(id));
+  sendmail(id, name, data, getobj(oEmail, id));
 }
 
-window.onload=getUserList();
+window.onload=getConfiguration();
 document.getElementById("human").addEventListener("click", clickHandle, false);
 document.getElementById("sign").addEventListener("change", changeHandle, false);
